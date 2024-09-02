@@ -1,0 +1,70 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-09-02T06:18:58Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 59fed9a6016447e78f66be46c91dbaaf
+      template: 'Havelsan Health Template'
+      name: 'Havelsan Health Template'
+      groups:
+        - name: Templates
+      items:
+        - uuid: dc6c04ad22f54b869bb3d3faf126cb7d
+          name: 'Linux: Host name of Zabbix agent running'
+          key: agent.hostname
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            - tag: component
+              value: system
+        - uuid: 6c2a3dd0ffa5471496c4e94225603a33
+          name: 'Linux: System name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: system.name
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            An administratively-assigned name for this managed node.By convention, this is the node's fully-qualified domain name.  If the name is unknown, the value is the zero-length string.
+          inventory_link: NAME
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            - tag: component
+              value: system
+        - uuid: 3acfa6c8bab944cc8e0b37c664b7539a
+          name: 'Linux: Zabbix agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,agent,available]'
+          history: 7d
+          description: 'Monitoring the availability status of the agent.'
+          tags:
+            - tag: component
+              value: system
+        - uuid: 56992a12c7224e5281b840f68f9db519
+          name: 'Linux: SNMP agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          history: 7d
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible value:
+            0 - not available
+            1 - available
+            2 - unknown
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network

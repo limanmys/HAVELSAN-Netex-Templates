@@ -1,0 +1,63 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-09-02T06:19:23Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: eff7ca61f86c4aa9bf2fc90d687f6253
+      template: 'Havelsan Utilization Template'
+      name: 'Havelsan Utilization Template'
+      description: 'Doğukan EREN'
+      groups:
+        - name: Templates
+      discovery_rules:
+        - uuid: 0429b0c014c044b1ab638f52bc05d0bc
+          name: 'HAVELSAN - Agent Discovery'
+          type: EXTERNAL
+          key: 'disco.sh[{$HOSTNAME},""]'
+          filter:
+            conditions:
+              - macro: '{#INTYPE}'
+                value: '.*snmp.*'
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          item_prototypes:
+            - uuid: 33825ffbb7a94dfc8001e7ddadb11dd9
+              name: 'HAVELSAN - CPU Utilization AGENT'
+              key: 'system.cpu.util[{#INTYPE}]'
+              value_type: FLOAT
+              units: '%'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '[{"{#INTYPE}":"agent"}]'
+                - '[{"{#INTYPE}": ""}]'
+        - uuid: 461884fe3ec849179b9497b3f1905f7c
+          name: 'HAVELSAN - SNMP Discovery'
+          type: EXTERNAL
+          key: 'disco.sh[{$HOSTNAME}]'
+          filter:
+            conditions:
+              - macro: '{#INTYPE}'
+                value: '.*snmp.*'
+                formulaid: A
+          item_prototypes:
+            - uuid: 601b3578459b4ccab44d0d9970cd0cb7
+              name: 'HAVELSAN - CPU Utilization'
+              type: CALCULATED
+              key: 'hvl.cpu.util[{#INTYPE}]'
+              units: '%'
+              params: 'last(//hvl.snmp.cpu.ult[snmp])'
+            - uuid: 0ba2101bd6734342941d57da064f5cd9
+              name: 'HAVELSAN - CPU Utilization SNMP'
+              type: SNMP_AGENT
+              snmp_oid: 1.3.6.1.4.1.9.9.109.1.1.1.1.8.1
+              key: 'hvl.snmp.cpu.ult[{#INTYPE}]'
+              units: '%'
+      valuemaps:
+        - uuid: a98ce0eea7d44eb5b1b0e3519e6f80b4
+          name: Varsayilan
+          mappings:
+            - type: DEFAULT
+              newvalue: '0'
