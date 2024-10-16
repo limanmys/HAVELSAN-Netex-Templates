@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-10-15T10:13:34Z'
+  date: '2024-10-16T09:52:41Z'
   groups:
     - uuid: 36bff6c29af64692839d077febfc7079
       name: 'Templates/Network devices'
@@ -575,22 +575,14 @@ zabbix_export:
         - macro: '{$SNMP.TIMEOUT}'
           value: 5m
       dashboards:
-        - uuid: 3df27c8b41574ccab5ad65f379269e1f
-          name: 'Network interfaces'
+        - uuid: b49709dbb5ab4e0f9f1ca06d46a18675
+          name: 'net.if.in[ifInOctets.'
           pages:
-            - widgets:
-                - type: GRAPH_PROTOTYPE
-                  width: '24'
-                  height: '5'
-                  fields:
-                    - type: INTEGER
-                      name: columns
-                      value: '1'
-                    - type: GRAPH_PROTOTYPE
-                      name: graphid
-                      value:
-                        host: 'HAVELSAN Network Generic Device by SNMP'
-                        name: 'Interface {#IFNAME}({#IFALIAS}): Network traffic'
+            - {  }
+        - uuid: f02d429d6d9a412eb2e0080bd90dbe43
+          name: 'net.if.out[ifOutOctets.'
+          pages:
+            - {  }
       valuemaps:
         - uuid: 78a3a9dc928e4df28bc263f9fc936f65
           name: 'EtherLike-MIB::dot3StatsDuplexStatus'
