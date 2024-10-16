@@ -6,8 +6,8 @@ zabbix_export:
       name: Templates/Modules
   templates:
     - uuid: 78a17536644b46f7861af4fcc9ea2680
-      template: 'HAVELSAN Network Mon'
-      name: 'HAVELSAN Network Mon'
+      template: 'HAVELSAN ICMP Mon'
+      name: 'HAVELSAN ICMP Mon'
       description: HAVELSAN
       groups:
         - name: Templates/Modules
