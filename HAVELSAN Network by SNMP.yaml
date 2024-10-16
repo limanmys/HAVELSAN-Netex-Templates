@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-10-16T09:52:41Z'
+  date: '2024-10-16T13:27:59Z'
   groups:
     - uuid: 36bff6c29af64692839d077febfc7079
       name: 'Templates/Network devices'
@@ -78,7 +78,6 @@ zabbix_export:
               name: 'Interface {#IFNAME}({#IFALIAS}): Total Bits'
               type: CALCULATED
               key: 'hvl.if.total[ifInOctets.{#SNMPINDEX}]'
-              delay: 3m
               history: 7d
               units: bps
               params: 'last(//net.if.in[ifInOctets.{#SNMPINDEX}]) + last(//net.if.out[ifOutOctets.{#SNMPINDEX}])'
@@ -143,7 +142,6 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '1.3.6.1.2.1.2.2.1.10.{#SNMPINDEX}'
               key: 'net.if.in[ifInOctets.{#SNMPINDEX}]'
-              delay: 3m
               history: 7d
               units: bps
               description: |
@@ -214,7 +212,6 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '1.3.6.1.2.1.2.2.1.16.{#SNMPINDEX}'
               key: 'net.if.out[ifOutOctets.{#SNMPINDEX}]'
-              delay: 3m
               history: 7d
               units: bps
               description: |
