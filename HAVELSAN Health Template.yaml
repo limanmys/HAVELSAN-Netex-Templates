@@ -38,11 +38,11 @@ zabbix_export:
           triggers:
             - uuid: 73a9c41242b74407bf7df9f82eef9afa
               expression: 'last(/Havelsan Health Template/hvl.availability,#2)=0'
-              name: 'Sunucuya 1 dakikadır ulaşılamıyor'
+              name: 'En az 1 dakikadır sunucuya ulaşılamıyor'
               priority: HIGH
             - uuid: 37d44004cf634c3b9dc7b662b6db021f
               expression: 'last(/Havelsan Health Template/hvl.availability,#3)=0'
-              name: 'Sunucuya 3 dakikadır ulaşılamıyor'
+              name: 'En az 3 dakikadır sunucuya ulaşılamıyor'
               priority: DISASTER
         - uuid: d76d23d44cf94d6ab367d71793dfb2e6
           name: 'HAVELSAN ICMP Availaiblity'
