@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-10-16T05:12:14Z'
+  date: '2024-10-23T03:38:22Z'
   groups:
     - uuid: 57b7ae836ca64446ba2c296389c009b7
       name: Templates/Modules
@@ -24,17 +24,6 @@ zabbix_export:
               value: health
             - tag: component
               value: network
-          triggers:
-            - uuid: c4477ef79947463d836b208e32af2922
-              expression: 'min(/HAVELSAN Network Mon/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/HAVELSAN Network Mon/icmppingloss,5m)<100'
-              name: 'ICMP: High ICMP ping loss'
-              opdata: 'Loss: {ITEM.LASTVALUE1}'
-              priority: WARNING
-              tags:
-                - tag: scope
-                  value: availability
-                - tag: scope
-                  value: performance
         - uuid: b7c2645ca6d043779cf9122f0bed6f3b
           name: 'ICMP: ICMP response time'
           type: SIMPLE
@@ -47,25 +36,20 @@ zabbix_export:
               value: health
             - tag: component
               value: network
-          triggers:
-            - uuid: dabcdb8249fe47ac83c043a29e3f58e7
-              expression: 'avg(/HAVELSAN Network Mon/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}'
-              name: 'ICMP: High ICMP ping response time'
-              opdata: 'Value: {ITEM.LASTVALUE1}'
-              priority: WARNING
-              dependencies:
-                - name: 'ICMP: High ICMP ping loss'
-                  expression: 'min(/HAVELSAN Network Mon/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/HAVELSAN Network Mon/icmppingloss,5m)<100'
-              tags:
-                - tag: scope
-                  value: availability
-                - tag: scope
-                  value: performance
       macros:
         - macro: '{$ICMP_LOSS_WARN}'
           value: '20'
         - macro: '{$ICMP_RESPONSE_TIME_WARN}'
           value: '0.15'
+      dashboards:
+        - uuid: 42a6f3f61d294dbea72971cf162516eb
+          name: icmppingloss
+          pages:
+            - {  }
+        - uuid: 9c7658db0e5244d591e0107b4f6121b6
+          name: icmppingsec
+          pages:
+            - {  }
       valuemaps:
         - uuid: d3cd58e0b75347d5b13cb07608bdaa2b
           name: 'Service state'
