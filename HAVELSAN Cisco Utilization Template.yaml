@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-10-16T07:17:45Z'
+  date: '2024-10-23T04:07:19Z'
   groups:
     - uuid: 36bff6c29af64692839d077febfc7079
       name: 'Templates/Network devices'
@@ -241,17 +241,14 @@ zabbix_export:
         - macro: '{$TEMP_WARN_STATUS}'
           value: '2'
       dashboards:
-        - uuid: 0c80cf7c98ea42b4a45ac45bbb9a92ef
-          name: 'Network interfaces'
+        - uuid: 95f45801dd294677b45f64d3aa63b1e0
+          name: 'system.cpu.util[cpmCPUTotal5minRev.'
           pages:
-            - widgets:
-                - type: GRAPH_PROTOTYPE
-                  width: '24'
-                  height: '5'
-                  fields:
-                    - type: INTEGER
-                      name: columns
-                      value: '1'
+            - {  }
+        - uuid: feed0526b74540aea0f3ac4a08738eab
+          name: 'vm.memory.util[vm.memory.util.'
+          pages:
+            - {  }
       valuemaps:
         - uuid: 40fafce3c7e2402c97502aee3d906519
           name: 'CISCO-ENVMON-MIB::CiscoEnvMonState'
