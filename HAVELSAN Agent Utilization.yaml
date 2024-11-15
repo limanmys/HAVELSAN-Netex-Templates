@@ -1,0 +1,942 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-11-14T12:50:10Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+    - uuid: 846977d1dfed4968bc5f8bdb363285bc
+      name: 'Templates/Operating systems'
+  templates:
+    - uuid: 9c7eb190f49f4c0f87a602f5ef294b4b
+      template: 'HAVELSAN Agent Utilization'
+      name: 'HAVELSAN Agent Utilization'
+      description: 'HAVELSAN Agent Utilization'
+      groups:
+        - name: 'Templates/Operating systems'
+      items:
+        - uuid: ef30042970e4497f9947fd8252d15af9
+          name: 'HAVELSAN: Used swap space in %'
+          key: 'perf_counter_en["\Paging file(_Total)\% Usage"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'The used space of swap volume/file in percent.'
+          tags:
+            - tag: component
+              value: memory
+            - tag: component
+              value: storage
+        - uuid: 3492c272a6ef491e919393c46a344647
+          name: 'HAVELSAN: CPU utilization'
+          key: system.cpu.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'The CPU utilization expressed in %.'
+          tags:
+            - tag: component
+              value: cpu
+          triggers:
+            - uuid: 0d88a7e9ffa54cd18378b92fd0b5130b
+              expression: 'min(/HAVELSAN Agent Utilization/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+              name: 'HAVELSAN: High CPU utilization'
+              event_name: 'Windows: High CPU utilization (over {$CPU.UTIL.CRIT}% for 5m)'
+              opdata: 'Current utilization: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'The CPU utilization is too high. The system might be slow to respond.'
+              tags:
+                - tag: scope
+                  value: performance
+        - uuid: 80ef0bd497614a48ac2a196d33925df5
+          name: 'HAVELSAN: Free swap space'
+          type: CALCULATED
+          key: system.swap.free
+          history: 7d
+          units: B
+          params: 'last(//system.swap.size[,total]) - last(//system.swap.size[,total]) / 100 * last(//perf_counter_en["\Paging file(_Total)\% Usage"])'
+          description: 'The free space of the swap volume/file expressed in bytes.'
+          tags:
+            - tag: component
+              value: memory
+            - tag: component
+              value: storage
+        - uuid: 2c9481cc11694ed0bdab62dff715dc84
+          name: 'HAVELSAN: Total swap space'
+          key: 'system.swap.size[,total]'
+          history: 7d
+          units: B
+          description: 'The total space of the swap volume/file expressed in bytes.'
+          tags:
+            - tag: component
+              value: memory
+            - tag: component
+              value: storage
+        - uuid: b8ab7134b7714ae096b26ef985146103
+          name: 'HAVELSAN: Uptime'
+          key: system.uptime
+          delay: 30s
+          history: 7d
+          trends: '0'
+          units: uptime
+          description: 'The system uptime expressed in the following format: "N days, hh:mm:ss".'
+          tags:
+            - tag: component
+              value: system
+          triggers:
+            - uuid: 40f444ed49114ba3ba1558b6a323dc01
+              expression: 'last(/HAVELSAN Agent Utilization/system.uptime)<10m'
+              name: 'HAVLESAN: Host has been restarted'
+              event_name: 'Windows: Host has been restarted (uptime < 10m)'
+              priority: WARNING
+              description: 'The device uptime is less than 10 minutes.'
+              manual_close: 'YES'
+              tags:
+                - tag: scope
+                  value: notice
+        - uuid: be0536da17df49ce8fc18e1f6fe792a7
+          name: 'HAVELSAN: Total memory'
+          key: 'vm.memory.size[total]'
+          history: 7d
+          units: B
+          description: 'The total memory expressed in bytes.'
+          tags:
+            - tag: component
+              value: memory
+        - uuid: c1da8b9fb1c241dd89ca9a657e233c6e
+          name: 'HAVELSAN: Used memory'
+          key: 'vm.memory.size[used]'
+          history: 7d
+          units: B
+          description: 'Used memory in bytes.'
+          tags:
+            - tag: component
+              value: memory
+        - uuid: dd3ad4759ccb41d2a168a8e11e84c760
+          name: 'HAVELSAN: Memory utilization'
+          type: CALCULATED
+          key: vm.memory.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          params: 'last(//vm.memory.size[used]) / last(//vm.memory.size[total]) * 100'
+          description: 'Memory utilization in %.'
+          tags:
+            - tag: component
+              value: memory
+          triggers:
+            - uuid: ea52b5f4cfdd489dab9af64df742a3a8
+              expression: 'min(/HAVELSAN Agent Utilization/vm.memory.util,5m)>{$MEMORY.UTIL.MAX}'
+              name: 'HAVELSAN: High memory utilization'
+              event_name: 'Windows: High memory utilization (>{$MEMORY.UTIL.MAX}% for 5m)'
+              priority: AVERAGE
+              description: 'The system is running out of free memory.'
+              tags:
+                - tag: scope
+                  value: capacity
+                - tag: scope
+                  value: performance
+      discovery_rules:
+        - uuid: b1dacf0b068d4c3ca0fa051ccc60a7f2
+          name: 'Physical disks discovery'
+          key: 'perf_instance_en.discovery[PhysicalDisk]'
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.MATCHES}'
+                formulaid: A
+              - macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          description: 'Discovery of installed physical disks.'
+          item_prototypes:
+            - uuid: 78b2c8e3cc55448ea4277541b91eacaf
+              name: '{#DEVNAME}: Disk utilization by idle time'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\% Idle Time",60]'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'This item is the percentage of elapsed time that the selected disk drive was busy servicing read or writes requests based on idle time.'
+              preprocessing:
+                - type: JAVASCRIPT
+                  parameters:
+                    - 'return (100 - value)'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+              trigger_prototypes:
+                - uuid: 5358633bce4a4ebe9bea1c074cc95093
+                  expression: 'min(/HAVELSAN Agent Utilization/perf_counter_en["\PhysicalDisk({#DEVNAME})\% Idle Time",60],15m)>{$VFS.DEV.UTIL.MAX.WARN}'
+                  name: '{#DEVNAME}: Disk is overloaded'
+                  event_name: '{#DEVNAME}: Disk is overloaded (util > {$VFS.DEV.UTIL.MAX.WARN}% for 15m)'
+                  priority: WARNING
+                  description: 'The disk appears to be under heavy load.'
+                  manual_close: 'YES'
+                  dependencies:
+                    - name: '{#DEVNAME}: Disk read request responses are too high'
+                      expression: 'min(/HAVELSAN Agent Utilization/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60],15m) > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}'
+                    - name: '{#DEVNAME}: Disk write request responses are too high'
+                      expression: 'min(/HAVELSAN Agent Utilization/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60],15m) > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}'
+                  tags:
+                    - tag: scope
+                      value: performance
+            - uuid: a36911950c1f4b9e9b9315ccab35e516
+              name: '{#DEVNAME}: Average disk read queue length'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Read Queue Length",60]'
+              history: 7d
+              value_type: FLOAT
+              description: 'Average disk read queue, the number of requests outstanding on the disk at the time the performance data is collected.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+            - uuid: 6e4029b2372d47ee89bf13732d0a9989
+              name: '{#DEVNAME}: Disk read request avg waiting time'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60]'
+              history: 7d
+              value_type: FLOAT
+              units: s
+              description: 'The average time for read requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+              trigger_prototypes:
+                - uuid: c94df2a19ec54b0b86c105ad3578a7e9
+                  expression: 'min(/HAVELSAN Agent Utilization/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60],15m) > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}'
+                  name: '{#DEVNAME}: Disk read request responses are too high'
+                  event_name: '{#DEVNAME}: Disk read request responses are too high (read > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}s for 15m)'
+                  priority: WARNING
+                  description: 'This trigger might indicate the disk {#DEVNAME} saturation.'
+                  manual_close: 'YES'
+                  tags:
+                    - tag: scope
+                      value: performance
+            - uuid: aeba26a0c1b24871b1fa8a966aa2ffec
+              name: '{#DEVNAME}: Disk write request avg waiting time'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60]'
+              history: 7d
+              value_type: FLOAT
+              units: s
+              description: 'The average time for write requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+              trigger_prototypes:
+                - uuid: c74fe2b4932147df9e497cfb73e3a7e0
+                  expression: 'min(/HAVELSAN Agent Utilization/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60],15m) > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}'
+                  name: '{#DEVNAME}: Disk write request responses are too high'
+                  event_name: '{#DEVNAME}: Disk write request responses are too high (write > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}s for 15m)'
+                  priority: WARNING
+                  description: 'This trigger might indicate the disk {#DEVNAME} saturation.'
+                  manual_close: 'YES'
+                  tags:
+                    - tag: scope
+                      value: performance
+            - uuid: 8b0bcb646cea42a8b694ced09893cada
+              name: '{#DEVNAME}: Average disk write queue length'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Write Queue Length",60]'
+              history: 7d
+              value_type: FLOAT
+              description: 'Average disk write queue, the number of requests outstanding on the disk at the time the performance data is collected.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+            - uuid: c65dda882b95408b86e358b83327cf43
+              name: '{#DEVNAME}: Disk average queue size (avgqu-sz)'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Current Disk Queue Length",60]'
+              history: 7d
+              value_type: FLOAT
+              description: 'The current average disk queue; the number of requests outstanding on the disk while the performance data is being collected.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+            - uuid: 092c311ebf984fe695d587f0c0ab203f
+              name: '{#DEVNAME}: Disk read rate'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Reads/sec",60]'
+              history: 7d
+              value_type: FLOAT
+              units: '!r/s'
+              description: 'Rate of read operations on the disk.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+            - uuid: 4192c39abf3641b2ba7b512ecccf53ee
+              name: '{#DEVNAME}: Disk write rate'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Writes/sec",60]'
+              history: 7d
+              value_type: FLOAT
+              units: '!w/s'
+              description: 'Rate of write operations on the disk.'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: disk
+                  value: '{#DEVNAME}'
+          graph_prototypes:
+            - uuid: d2ce2d6358a649358083120cb72f88ea
+              name: '{#DEVNAME}: Disk average queue length'
+              graph_items:
+                - color: 199C0D
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Read Queue Length",60]'
+                - sortorder: '1'
+                  color: F63100
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Write Queue Length",60]'
+            - uuid: 25d8009e29e2480cac09c981164e7adf
+              name: '{#DEVNAME}: Disk average waiting time'
+              graph_items:
+                - color: 199C0D
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60]'
+                - sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: F63100
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60]'
+            - uuid: 3960467555d84435bb248133c8abbf4a
+              name: '{#DEVNAME}: Disk read/write rates'
+              graph_items:
+                - color: 199C0D
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Reads/sec",60]'
+                - sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: F63100
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Writes/sec",60]'
+            - uuid: 7e64421427ed4fb09978b1fbeedaf5f1
+              name: '{#DEVNAME}: Disk utilization and queue'
+              graph_items:
+                - color: 199C0D
+                  yaxisside: RIGHT
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Current Disk Queue Length",60]'
+                - sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: F63100
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\% Idle Time",60]'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '{#INSTANCE}'
+                - '{#DEVNAME}'
+        - uuid: 8be47c6061df41fda5d344dc90e3c256
+          name: 'Mounted filesystem discovery'
+          key: vfs.fs.discovery
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#FSDRIVETYPE}'
+                value: '{$VFS.FS.FSDRIVETYPE.MATCHES}'
+                formulaid: A
+              - macro: '{#FSDRIVETYPE}'
+                value: '{$VFS.FS.FSDRIVETYPE.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+              - macro: '{#FSNAME}'
+                value: '{$VFS.FS.FSNAME.MATCHES}'
+                formulaid: C
+              - macro: '{#FSNAME}'
+                value: '{$VFS.FS.FSNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: D
+              - macro: '{#FSTYPE}'
+                value: '{$VFS.FS.FSTYPE.MATCHES}'
+                formulaid: E
+              - macro: '{#FSTYPE}'
+                value: '{$VFS.FS.FSTYPE.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: F
+          description: 'Discovery of file systems of different types.'
+          item_prototypes:
+            - uuid: 56eca81d4a69489c93c12d108d066835
+              name: '{#FSLABEL}({#FSNAME}): Space utilization'
+              key: 'vfs.fs.size[{#FSNAME},pused]'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'Space utilization in % for {#FSNAME}'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: filesystem
+                  value: '{#FSNAME}'
+            - uuid: 7b50636ca40e4f599994d07942e5b0e9
+              name: '{#FSLABEL}({#FSNAME}): Total space'
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              history: 7d
+              units: B
+              description: 'Total space in bytes'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: filesystem
+                  value: '{#FSNAME}'
+            - uuid: 9f0e6c087c0f4eb992ba8c2adcfa1e53
+              name: '{#FSLABEL}({#FSNAME}): Used space'
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              history: 7d
+              units: B
+              description: 'Used storage in bytes'
+              tags:
+                - tag: component
+                  value: storage
+                - tag: filesystem
+                  value: '{#FSNAME}'
+          trigger_prototypes:
+            - uuid: d4f467d3c1374cca8e36c3ba787a41f8
+              expression: |
+                last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},pused])>{$VFS.FS.PUSED.MAX.CRIT:"{#FSNAME}"} and
+                ((last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},total])-last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},used]))<{$VFS.FS.FREE.MIN.CRIT:"{#FSNAME}"} or timeleft(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},pused],1h,100)<1d)
+              name: '{#FSLABEL}({#FSNAME}): Disk space is critically low'
+              event_name: '{#FSLABEL}({#FSNAME}): Disk space is critically low (used > {$VFS.FS.PUSED.MAX.CRIT:"{#FSNAME}"}%)'
+              opdata: 'Space used: {ITEM.LASTVALUE3} of {ITEM.LASTVALUE2} ({ITEM.LASTVALUE1})'
+              priority: AVERAGE
+              description: |
+                Two conditions should match:
+                1. The first condition - utilization of the space should be above `{$VFS.FS.PUSED.MAX.CRIT:"{#FSNAME}"}`.
+                2. The second condition should be one of the following:
+                - the disk free space is less than `{$VFS.FS.FREE.MIN.CRIT:"{#FSNAME}"}`;
+                - the disk will be full in less than 24 hours.
+              manual_close: 'YES'
+              tags:
+                - tag: scope
+                  value: capacity
+            - uuid: fe2b52bb13e84ebb8607e382cb92f7a5
+              expression: |
+                last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},pused])>{$VFS.FS.PUSED.MAX.WARN:"{#FSNAME}"} and
+                ((last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},total])-last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},used]))<{$VFS.FS.FREE.MIN.WARN:"{#FSNAME}"} or timeleft(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},pused],1h,100)<1d)
+              name: '{#FSLABEL}({#FSNAME}): Disk space is low'
+              event_name: '{#FSLABEL}({#FSNAME}): Disk space is low (used > {$VFS.FS.PUSED.MAX.WARN:"{#FSNAME}"}%)'
+              opdata: 'Space used: {ITEM.LASTVALUE3} of {ITEM.LASTVALUE2} ({ITEM.LASTVALUE1})'
+              priority: WARNING
+              description: |
+                Two conditions should match:
+                1. The first condition - utilization of the space should be above `{$VFS.FS.PUSED.MAX.WARN:"{#FSNAME}"}`.
+                2. The second condition should be one of the following:
+                - the disk free space is less than `{$VFS.FS.FREE.MIN.WARN:"{#FSNAME}"}`;
+                - the disk will be full in less than 24 hours.
+              manual_close: 'YES'
+              dependencies:
+                - name: '{#FSLABEL}({#FSNAME}): Disk space is critically low'
+                  expression: |
+                    last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},pused])>{$VFS.FS.PUSED.MAX.CRIT:"{#FSNAME}"} and
+                    ((last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},total])-last(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},used]))<{$VFS.FS.FREE.MIN.CRIT:"{#FSNAME}"} or timeleft(/HAVELSAN Agent Utilization/vfs.fs.size[{#FSNAME},pused],1h,100)<1d)
+              tags:
+                - tag: scope
+                  value: capacity
+          graph_prototypes:
+            - uuid: 3b89310e90934596bee400655db4f163
+              name: '{#FSLABEL}({#FSNAME}): Disk space usage'
+              width: '600'
+              height: '340'
+              type: PIE
+              show_3d: 'YES'
+              graph_items:
+                - color: '969696'
+                  calc_fnc: LAST
+                  type: GRAPH_SUM
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'vfs.fs.size[{#FSNAME},total]'
+                - sortorder: '1'
+                  color: C80000
+                  calc_fnc: LAST
+                  item:
+                    host: 'HAVELSAN Agent Utilization'
+                    key: 'vfs.fs.size[{#FSNAME},used]'
+      tags:
+        - tag: class
+          value: os
+        - tag: target
+          value: windows
+      macros:
+        - macro: '{$AGENT.TIMEOUT}'
+          value: 3m
+          description: 'Timeout after which agent is considered unavailable. Works only for agents reachable from Zabbix server/proxy (passive mode).'
+        - macro: '{$CPU.INTERRUPT.CRIT.MAX}'
+          value: '50'
+          description: 'The critical threshold of the % Interrupt Time counter.'
+        - macro: '{$CPU.PRIV.CRIT.MAX}'
+          value: '30'
+          description: 'The threshold of the % Privileged Time counter.'
+        - macro: '{$CPU.QUEUE.CRIT.MAX}'
+          value: '3'
+          description: 'The threshold of the Processor Queue Length counter.'
+        - macro: '{$CPU.UTIL.CRIT}'
+          value: '90'
+          description: 'The critical threshold of the CPU utilization expressed in %.'
+        - macro: '{$IF.ERRORS.WARN}'
+          value: '2'
+        - macro: '{$IF.UTIL.MAX}'
+          value: '90'
+        - macro: '{$IFCONTROL}'
+          value: '1'
+        - macro: '{$MEM.PAGE_SEC.CRIT.MAX}'
+          value: '1000'
+          description: 'The warning threshold of the Memory Pages/sec counter.'
+        - macro: '{$MEM.PAGE_TABLE_CRIT.MIN}'
+          value: '5000'
+          description: 'The warning threshold of the Free System Page Table Entries counter.'
+        - macro: '{$MEMORY.UTIL.MAX}'
+          value: '90'
+          description: 'The warning threshold of the Memory util item.'
+        - macro: '{$NET.IF.IFALIAS.MATCHES}'
+          value: '.*'
+          description: 'This macro is used in Network interface discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$NET.IF.IFALIAS.NOT_MATCHES}'
+          value: CHANGE_THIS
+          description: 'This macro is used in Network interface discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$NET.IF.IFDESCR.MATCHES}'
+          value: '.*'
+          description: 'This macro is used in Network interface discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$NET.IF.IFDESCR.NOT_MATCHES}'
+          value: CHANGE_THIS
+          description: 'This macro is used in Network interface discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$NET.IF.IFNAME.MATCHES}'
+          value: '.*'
+          description: 'This macro is used in Network interface discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$NET.IF.IFNAME.NOT_MATCHES}'
+          value: Miniport|Virtual|Teredo|Kernel|Loopback|Bluetooth|HTTPS|6to4|QoS|Layer
+          description: 'This macro is used in Network interface discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$SERVICE.NAME.MATCHES}'
+          value: '^.*$'
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$SERVICE.NAME.NOT_MATCHES}'
+          value: '^(?:RemoteRegistry|MMCSS|gupdate|SysmonLog|clr_optimization_v.+|sppsvc|gpsvc|Pml Driver HPZ12|Net Driver HPZ12|MapsBroker|IntelAudioService|Intel\(R\) TPM Provisioning Service|dbupdate|DoSvc|CDPUserSvc_.+|WpnUserService_.+|OneSyncSvc_.+|WbioSrvc|BITS|tiledatamodelsvc|GISvc|ShellHWDetection|TrustedInstaller|TabletInputService|CDPSvc|wuauserv|edgeupdate)$'
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$SERVICE.STARTUPNAME.MATCHES}'
+          value: '^(?:automatic|automatic delayed)$'
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$SERVICE.STARTUPNAME.NOT_MATCHES}'
+          value: '^(?:manual|disabled)$'
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$SWAP.PFREE.MIN.WARN}'
+          value: '20'
+          description: 'The warning threshold of the minimum free swap.'
+        - macro: '{$SYSTEM.FUZZYTIME.MAX}'
+          value: '60'
+          description: 'The threshold for difference of system time in seconds.'
+        - macro: '{$VFS.DEV.DEVNAME.MATCHES}'
+          value: '.*'
+          description: 'This macro is used in physical disks discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+          value: _Total
+          description: 'This macro is used in physical disks discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.DEV.READ.AWAIT.WARN}'
+          value: '0.02'
+          description: 'Disk read average response time (in s) before the trigger would fire.'
+        - macro: '{$VFS.DEV.UTIL.MAX.WARN}'
+          value: '95'
+          description: 'The warning threshold of disk time utilization in percent.'
+        - macro: '{$VFS.DEV.WRITE.AWAIT.WARN}'
+          value: '0.02'
+          description: 'Disk write average response time (in s) before the trigger would fire.'
+        - macro: '{$VFS.FS.FREE.MIN.CRIT}'
+          value: 5G
+          description: 'The critical threshold of the filesystem utilization.'
+        - macro: '{$VFS.FS.FREE.MIN.WARN}'
+          value: 10G
+          description: 'The warning threshold of the filesystem utilization.'
+        - macro: '{$VFS.FS.FSDRIVETYPE.MATCHES}'
+          value: fixed
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.FS.FSDRIVETYPE.NOT_MATCHES}'
+          value: ^\s$
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.FS.FSNAME.MATCHES}'
+          value: '.*'
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.FS.FSNAME.NOT_MATCHES}'
+          value: '^(?:/dev|/sys|/run|/proc|.+/shm$)'
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.FS.FSTYPE.MATCHES}'
+          value: '.*'
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.FS.FSTYPE.NOT_MATCHES}'
+          value: ^\s$
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$VFS.FS.PUSED.MAX.CRIT}'
+          value: '90'
+          description: 'The critical threshold of the filesystem utilization in percent.'
+        - macro: '{$VFS.FS.PUSED.MAX.WARN}'
+          value: '80'
+          description: 'The warning threshold of the filesystem utilization in percent.'
+      dashboards:
+        - uuid: 048989b425314bb9bfb6ece8075c3f18
+          name: 'Network interfaces'
+          pages:
+            - name: Overview
+              widgets:
+                - type: GRAPH_PROTOTYPE
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '1'
+        - uuid: aeacfa6be189495abe9da4a3483e075f
+          name: 'System performance'
+          pages:
+            - widgets:
+                - type: GRAPH_CLASSIC
+                  width: '12'
+                  height: '5'
+                - type: GRAPH_CLASSIC
+                  'y': '5'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: 'HAVELSAN Agent Utilization'
+                        name: 'Windows: Memory utilization'
+                - type: GRAPH_PROTOTYPE
+                  'y': '10'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '1'
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid
+                      value:
+                        host: 'HAVELSAN Agent Utilization'
+                        name: '{#FSLABEL}({#FSNAME}): Disk space usage'
+                - type: GRAPH_PROTOTYPE
+                  'y': '15'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '1'
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid
+                      value:
+                        host: 'HAVELSAN Agent Utilization'
+                        name: '{#DEVNAME}: Disk read/write rates'
+                - type: GRAPH_PROTOTYPE
+                  'y': '20'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '1'
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid
+                      value:
+                        host: 'HAVELSAN Agent Utilization'
+                        name: '{#DEVNAME}: Disk utilization and queue'
+                - type: GRAPH_PROTOTYPE
+                  'y': '25'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '1'
+                - type: GRAPH_CLASSIC
+                  x: '12'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: source_type
+                      value: '1'
+                - type: GRAPH_CLASSIC
+                  x: '12'
+                  'y': '5'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: 'HAVELSAN Agent Utilization'
+                        name: 'Windows: Swap usage'
+      valuemaps:
+        - uuid: bbf10fc46aa44184871fcc41ed78866c
+          name: 'Win32_NetworkAdapter::AdapterTypeId'
+          mappings:
+            - value: '0'
+              newvalue: 'Ethernet 802.3'
+            - value: '1'
+              newvalue: 'Token Ring 802.5'
+            - value: '2'
+              newvalue: 'Fiber Distributed Data Interface (FDDI)'
+            - value: '3'
+              newvalue: 'Wide Area Network (WAN)'
+            - value: '4'
+              newvalue: LocalTalk
+            - value: '5'
+              newvalue: 'Ethernet using DIX header format'
+            - value: '6'
+              newvalue: ARCNET
+            - value: '7'
+              newvalue: 'ARCNET (878.2)'
+            - value: '8'
+              newvalue: ATM
+            - value: '9'
+              newvalue: Wireless
+            - value: '10'
+              newvalue: 'Infrared Wireless'
+            - value: '11'
+              newvalue: Bpc
+            - value: '12'
+              newvalue: CoWan
+            - value: '13'
+              newvalue: '1394'
+        - uuid: f831185ba913471eae45e16dbb0cabb5
+          name: 'Win32_NetworkAdapter::NetConnectionStatus'
+          mappings:
+            - value: '0'
+              newvalue: Disconnected
+            - value: '1'
+              newvalue: Connecting
+            - value: '2'
+              newvalue: Connected
+            - value: '3'
+              newvalue: Disconnecting
+            - value: '4'
+              newvalue: 'Hardware Not Present'
+            - value: '5'
+              newvalue: 'Hardware Disabled'
+            - value: '6'
+              newvalue: 'Hardware Malfunction'
+            - value: '7'
+              newvalue: 'Media Disconnected'
+            - value: '8'
+              newvalue: Authenticating
+            - value: '9'
+              newvalue: 'Authentication Succeeded'
+            - value: '10'
+              newvalue: 'Authentication Failed'
+            - value: '11'
+              newvalue: 'Invalid Address'
+            - value: '12'
+              newvalue: 'Credentials Required'
+        - uuid: b4d4dc1ef5704b918600ccc7a1a8334b
+          name: 'Windows service state'
+          mappings:
+            - value: '0'
+              newvalue: Running
+            - value: '1'
+              newvalue: Paused
+            - value: '2'
+              newvalue: 'Start pending'
+            - value: '3'
+              newvalue: 'Pause pending'
+            - value: '4'
+              newvalue: 'Continue pending'
+            - value: '5'
+              newvalue: 'Stop pending'
+            - value: '6'
+              newvalue: Stopped
+            - value: '7'
+              newvalue: Unknown
+            - value: '255'
+              newvalue: 'No such service'
+        - uuid: 60fbdd9068514341b11cbaf9b474deba
+          name: zabbix.host.available
+          mappings:
+            - value: '0'
+              newvalue: 'not available'
+            - value: '1'
+              newvalue: available
+            - value: '2'
+              newvalue: unknown
+        - uuid: 99fa0d34de4d4509b3d7bd679fa4203a
+          name: 'Zabbix agent ping status'
+          mappings:
+            - value: '1'
+              newvalue: Up
+    - uuid: 59fed9a6016447e78f66be46c91dbaaf
+      template: 'Havelsan Health Template'
+      name: 'Havelsan Health Template'
+      groups:
+        - name: Templates
+      items:
+        - uuid: a275c79a97f14edf89244125c9e32dee
+          name: 'HAVELSAN Availability'
+          type: CALCULATED
+          key: hvl.availability
+          params: |
+            last(//zabbix[host,agent,available]) + last(//zabbix[host,snmp,available]) + 
+            last(//icmpping)
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '3'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - '2'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - '4'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - '5'
+                - '1'
+          triggers:
+            - uuid: 73a9c41242b74407bf7df9f82eef9afa
+              expression: 'last(/Havelsan Health Template/hvl.availability,#2)=0'
+              name: 'En az 1 dakikadır sunucuya ulaşılamıyor'
+              priority: HIGH
+            - uuid: 37d44004cf634c3b9dc7b662b6db021f
+              expression: 'last(/Havelsan Health Template/hvl.availability,#3)=0'
+              name: 'En az 3 dakikadır sunucuya ulaşılamıyor'
+              priority: DISASTER
+        - uuid: d76d23d44cf94d6ab367d71793dfb2e6
+          name: 'HAVELSAN ICMP Availaiblity'
+          type: SIMPLE
+          key: icmpping
+        - uuid: 5a3c08973fd041a1817187c9e9ba89f2
+          name: 'Havelsan HTTP Port 80 Availability'
+          type: SIMPLE
+          key: 'net.tcp.service[tcp,,80]'
+          inventory_link: DEPLOYMENT_STATUS
+          valuemap:
+            name: 'Default 80 Port'
+        - uuid: 41db701fad904c1fae4133dc285cc739
+          name: 'HAVELSAN agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,agent,available]'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '2'
+                - '0'
+        - uuid: 9a698064e73b4c3b817b868e2ca77d71
+          name: 'HAVELSAN snmp availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '2'
+                - '0'
+      dashboards:
+        - uuid: 4ecee351b1fe44c3bbcc657ae29c1832
+          name: hvl.availability
+          pages:
+            - {  }
+        - uuid: 3445e7e5d5634f1fa7c90a18570eedfd
+          name: icmpping
+          pages:
+            - {  }
+        - uuid: 1188baf132d44665ab289c22a50f5e28
+          name: 'zabbix[host,agent,available]'
+          pages:
+            - {  }
+        - uuid: f3d21fb45f734596ac2b99be107d27b8
+          name: 'zabbix[host,snmp,available]'
+          pages:
+            - {  }
+      valuemaps:
+        - uuid: 1f288939c7cb427ab5dd81d3794a4056
+          name: 'Default 80 Port'
+          mappings:
+            - type: DEFAULT
+              newvalue: '0'
+    - uuid: 2f580b62b5b249248dcc923f40dbb25d
+      template: 'Havelsan Sensor Details'
+      name: 'Havelsan Sensor Details'
+      groups:
+        - name: Templates
+      items:
+        - uuid: 474e1e2435dc4804a57085b79a39ac6a
+          name: 'HAVELSAN Sensor Read'
+          key: 'web.page.get[{$IP},test.cgi,{$PORT}]'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  value = value.slice(80)
+                  
+                  return value
+        - uuid: 04543c70abe84bb2841f3b466b351a8c
+          name: 'HAVELSAN Sensor Health'
+          key: 'web.page.get[{$IP},test1.cgi,{$PORT}]'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  value = value.slice(80)
+                  
+                  return value
+      valuemaps:
+        - uuid: e6d19ef982074908bc60b68db987f289
+          name: Default
+          mappings:
+            - type: DEFAULT
+              newvalue: '0'
+  graphs:
+    - uuid: 3e63256d39cb4382b59951a74b85a2a5
+      name: 'Windows: CPU utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 199C0D
+          item:
+            host: 'HAVELSAN Agent Utilization'
+            key: system.cpu.util
+    - uuid: 952bf34024534ae0bb5719da01d9ec52
+      name: 'Windows: Memory utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 199C0D
+          item:
+            host: 'HAVELSAN Agent Utilization'
+            key: vm.memory.util
+    - uuid: fd2d36dda2294b10a2e5390ccf37f16b
+      name: 'Windows: Swap usage'
+      graph_items:
+        - color: 199C0D
+          item:
+            host: 'HAVELSAN Agent Utilization'
+            key: system.swap.free
+        - sortorder: '1'
+          color: F63100
+          item:
+            host: 'HAVELSAN Agent Utilization'
+            key: 'system.swap.size[,total]'
