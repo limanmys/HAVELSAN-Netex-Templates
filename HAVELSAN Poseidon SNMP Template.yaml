@@ -1,0 +1,193 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-11-15T06:29:00Z'
+  groups:
+    - uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    - uuid: d2588e2bd6ae4c7faa5370c53cf913f0
+      template: 'Havelsan Poseidon Template'
+      name: 'Havelsan Poseidon Template'
+      description: 'Monitoring Poseidon network devices via SNMP'
+      groups:
+        - name: 'Templates/Network devices'
+      items:
+        - uuid: e822b190d0874e0ab865f172ff6fd483
+          name: 'Poseidon Device Description'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.1.0
+          key: device.desc
+          trends: '0'
+          value_type: TEXT
+          description: 'Basic description of the Poseidon device'
+        - uuid: 9b3a36f39bc34368b6a0f5b13dd76d6d
+          name: 'Poseidon Device Name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: device.name
+          trends: '0'
+          value_type: TEXT
+          description: 'Name of the Poseidon device'
+      discovery_rules:
+        - uuid: 81affd1985664f5b930e49df806952e1
+          name: 'Poseidon Input Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#INNAME},1.3.6.1.4.1.21796.3.3.1.1.3 {#INSTATE},1.3.6.1.4.1.21796.3.3.1.1.2]'
+          key: input.discovery
+          description: 'Discovery rule for inputs in Poseidon device'
+          item_prototypes:
+            - uuid: 83e58358ac6c478fb78347d01eb7b958
+              name: 'Input Alarm Setup'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.1.1.4.{#SNMPINDEX}'
+              key: 'input.alrmsetup[{#SNMPINDEX}]'
+              description: 'Defines the alarm setup for the input'
+              valuemap:
+                name: 'Alarm Setup'
+            - uuid: 0c13817a18b540b1826c37bb574d4548
+              name: 'Input Alarm State'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.1.1.5.{#SNMPINDEX}'
+              key: 'input.alrmstate[{#SNMPINDEX}]'
+              description: 'Current alarm state for the input'
+              valuemap:
+                name: 'Alarm State'
+            - uuid: f0eb561429b0482a94d0b942b7c42541
+              name: 'Input Name : {#INNAME}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.1.1.3.{#SNMPINDEX}'
+              key: 'input.name[{#SNMPINDEX}]'
+              trends: '0'
+              value_type: TEXT
+              description: 'Name of the input device discovered'
+            - uuid: c565acafe04040c782b3eed2764fd41e
+              name: 'Input State'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.1.1.2.{#SNMPINDEX}'
+              key: 'input.state[{#SNMPINDEX}]'
+              description: 'State of the input device discovered'
+              valuemap:
+                name: 'State Output Poseidon'
+        - uuid: 2cc4086f8f1445aeb00081549ed23fc5
+          name: 'Poseidon Output Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#POSOUTNAME},1.3.6.1.4.1.21796.3.3.2.1.2,{#POSOUTSTATUS},1.3.6.1.4.1.21796.3.3.3.1.4]'
+          key: output.discovery
+          description: 'Discovery rule for outputs in Poseidon device'
+          item_prototypes:
+            - uuid: cbee826f724f4e678f15a4f669cc5b94
+              name: 'Output Name : {#POSOUTNAME}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.2.1.3.{#SNMPINDEX}'
+              key: 'output.outname[{#SNMPINDEX}]'
+              trends: '0'
+              value_type: TEXT
+              description: 'Name of the output device discovered'
+            - uuid: 4e5e1de4a8c04b3c938ad82c89a457b4
+              name: 'Output State: {#POSOUTSTATE}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.2.1.2.{#SNMPINDEX}'
+              key: 'output.outstate[{#SNMPINDEX}]'
+              description: 'Current state of the output device'
+              valuemap:
+                name: 'State Output Poseidon'
+            - uuid: 8d7d64b20ea74cca8c5c3e9b94c78dec
+              name: 'Output Type'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.2.1.4.{#SNMPINDEX}'
+              key: 'output.outtype[{#SNMPINDEX}]'
+              description: 'Type of the output device discovered'
+              valuemap:
+                name: 'State Output Poseidon'
+        - uuid: 25505daa76804fd485f5e2e48bbdc0d1
+          name: 'Poseidon Sensor Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPINDEX},1.3.6.1.4.1.21796.3.3.3.1.6,{#POSNAME},1.3.6.1.4.1.21796.3.3.3.1.2,{#POSSTATUS},1.3.6.1.4.1.21796.3.3.3.1.4]'
+          key: sensor.discovery
+          description: 'Discovery rule for sensors in Poseidon device'
+          item_prototypes:
+            - uuid: baedc7decf6c49a7a9574c5abdd66561
+              name: 'Sensor Name : {#POSNAME}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.3.1.2.{#SNMPINDEX}'
+              key: 'sensor.name[{#SNMPINDEX}]'
+              trends: '0'
+              value_type: TEXT
+              description: 'Name of the sensor device discovered'
+            - uuid: 9068f37fa20b442e84a68e06b06c46d7
+              name: 'Sensor State :  {#POSSTATUS}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.3.1.4.{#SNMPINDEX}'
+              key: 'sensor.state[{#SNMPINDEX}]'
+              description: 'Current state of the sensor device'
+              valuemap:
+                name: 'State Poseidon'
+              trigger_prototypes:
+                - uuid: 7ca79685b44149778c95282b30c6ac31
+                  expression: 'last(/Havelsan Poseidon Template/sensor.state[{#SNMPINDEX}])=3'
+                  name: 'State Alarm Trigger - {#POSNAME}'
+                  priority: HIGH
+            - uuid: d55fdc4cd8b44fdaba44c973dcafc4c0
+              name: 'Sensor Unit {#SNMPINDEX}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.21796.3.3.3.1.9.{#SNMPINDEX}'
+              key: 'sensor.unit[{#SNMPINDEX}]'
+              description: 'Unit type of the sensor device discovered'
+              valuemap:
+                name: 'Units Sensor Poseidon'
+      valuemaps:
+        - uuid: 17342293d4724cb9aaccbdbbe5a1471c
+          name: 'Alarm Setup'
+          mappings:
+            - value: '0'
+              newvalue: inactive
+            - value: '1'
+              newvalue: activePff
+            - value: '2'
+              newvalue: activeOn
+        - uuid: 05e82ec582984139ae92861123d7c9ad
+          name: 'Alarm State'
+          mappings:
+            - value: '0'
+              newvalue: Normal
+            - value: '1'
+              newvalue: Alarm
+        - uuid: 3acb5009b5bb4a53b27119dc4ae0295c
+          name: 'State Output Poseidon'
+          mappings:
+            - value: '1'
+              newvalue: 'Off'
+            - value: '2'
+              newvalue: 'On'
+        - uuid: 5d107aad8a5344e3a861c3c23d157f80
+          name: 'State Poseidon'
+          mappings:
+            - value: '0'
+              newvalue: Invalid
+            - value: '1'
+              newvalue: Normal
+            - value: '2'
+              newvalue: AlarmState
+            - value: '3'
+              newvalue: Alarm
+        - uuid: 89c819e2872649b6bdff5fb322068c4b
+          name: 'Units Sensor Poseidon'
+          mappings:
+            - value: '0'
+              newvalue: �C
+            - value: '1'
+              newvalue: �F
+            - value: '2'
+              newvalue: �K
+            - value: '3'
+              newvalue: '%'
+            - value: '4'
+              newvalue: V
+            - value: '5'
+              newvalue: mA
+            - value: '6'
+              newvalue: unknown
+            - value: '7'
+              newvalue: pulse
+            - value: '8'
+              newvalue: switch
