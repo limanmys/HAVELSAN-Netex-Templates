@@ -1,0 +1,43 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-11-18T07:29:13Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 2f580b62b5b249248dcc923f40dbb25d
+      template: 'Havelsan Sensor Details'
+      name: 'Havelsan Sensor Details'
+      groups:
+        - name: Templates
+      items:
+        - uuid: 474e1e2435dc4804a57085b79a39ac6a
+          name: 'HAVELSAN Sensor Read'
+          key: 'web.page.get[{$IP},test.cgi,{$PORT}]'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  value = value.slice(80)
+                  
+                  return value
+        - uuid: 04543c70abe84bb2841f3b466b351a8c
+          name: 'HAVELSAN Sensor Health'
+          key: 'web.page.get[{$IP},test1.cgi,{$PORT}]'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  value = value.slice(80)
+                  
+                  return value
+      valuemaps:
+        - uuid: e6d19ef982074908bc60b68db987f289
+          name: Default
+          mappings:
+            - type: DEFAULT
+              newvalue: '0'
