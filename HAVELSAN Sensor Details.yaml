@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-19T03:25:18Z'
+  date: '2024-11-19T08:39:08Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -12,9 +12,10 @@ zabbix_export:
         - name: Templates
       items:
         - uuid: 0258552efad243d5b1633f460af2a070
-          name: 'HAVELSAN Device Type'
+          name: 'Device Type'
           type: CALCULATED
           key: hvl.dev.type
+          delay: 1d
           trends: '0'
           value_type: TEXT
           params: 'last(//web.page.get[{$IP},test.cgi,{$PORT}])'
@@ -24,11 +25,10 @@ zabbix_export:
                 - |2
                     if (value.includes("404")) {
                       value = "0";
-                    } else if (value.length < 3 && value.includes("3")) {
+                    } else if (value.length < 3 && value.includes("1")) {
                       value = "1";
                     }
                     return value;
-                  
             - type: STR_REPLACE
               parameters:
                 - '1'
