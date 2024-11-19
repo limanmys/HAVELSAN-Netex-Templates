@@ -1,0 +1,54 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-11-19T08:38:05Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: ad033421c35e421483ba8bd8789abebb
+      template: 'Havelsan Geko Details'
+      name: 'Havelsan Geko Details'
+      groups:
+        - name: Templates
+      items:
+        - uuid: bda29225d27d4f6c9a90f0cdebaafb1f
+          name: 'HAVELSAN Availability'
+          type: CALCULATED
+          key: hvl.availability
+          params: 'last(//net.tcp.service[http,,80])'
+        - uuid: be5a0a6f95bc41e79a360fc34940dbeb
+          name: 'Device Type'
+          type: HTTP_AGENT
+          key: hvl.dev.type
+          delay: 1d
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |2
+                    if (value.includes("Sensor-1")) {
+                      value = "2";
+                    }
+                    else if(value.includes("geko_plus"))
+                    {
+                     value = "3";
+                    } 
+                    else {
+                      value = "0";
+                    }
+                    return value;
+            - type: STR_REPLACE
+              parameters:
+                - '2'
+                - 'Geko Sensor'
+            - type: REGEX
+              parameters:
+                - '3'
+                - 'Geko  Plus Kamera'
+          url: 'http://{$IP}'
+          status_codes: ''
+        - uuid: ae699931d457471eb6ad7db65643fddd
+          name: 'HAVELSAN Port 80 Check'
+          type: SIMPLE
+          key: 'net.tcp.service[http,,80]'
