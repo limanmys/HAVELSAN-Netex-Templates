@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-10-16T09:53:22Z'
+  date: '2024-11-19T08:38:46Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -83,3 +83,9 @@ zabbix_export:
           name: 'zabbix[host,snmp,available]'
           pages:
             - {  }
+      valuemaps:
+        - uuid: 1f288939c7cb427ab5dd81d3794a4056
+          name: 'Default 80 Port'
+          mappings:
+            - type: DEFAULT
+              newvalue: '0'
