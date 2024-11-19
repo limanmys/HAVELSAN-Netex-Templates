@@ -1,0 +1,94 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-11-19T08:48:37Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 7eaaa17fecb443b489eb1b50bde9fd9c
+      template: 'Havelsan Health Camera'
+      name: 'Havelsan Health Camera'
+      groups:
+        - name: Templates
+      items:
+        - uuid: 4eb6e91dd03b47bd868f1719766d5ada
+          name: 'HAVELSAN Availability'
+          type: CALCULATED
+          key: hvl.availability
+          params: 'last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"])'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '3'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - '2'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - '4'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - '5'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - '6'
+                - '1'
+          triggers:
+            - uuid: c07a1fb7a76d4858bb91aebbb29ff2a9
+              expression: 'last(/Havelsan Health Camera/hvl.availability,#2)=0'
+              name: 'En az 1 dakikadır sunucuya ulaşılamıyor'
+              priority: HIGH
+            - uuid: e48942172f724dacbebbe7952b68b735
+              expression: 'last(/Havelsan Health Camera/hvl.availability,#3)=0'
+              name: 'En az 3 dakikadır sunucuya ulaşılamıyor'
+              priority: DISASTER
+        - uuid: 86327113d4b2443d8b00918e374eab22
+          name: 'HAVELSAN Device Type'
+          type: CALCULATED
+          key: hvl.dev.type
+          trends: '0'
+          value_type: TEXT
+          params: 'last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"])'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '1'
+                - Kamera
+        - uuid: 9a7ac080d90140b0bfb0e38ce3cfddfc
+          name: 'ICMP Ping Result Array'
+          key: 'wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"]'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var statusCode = JSON.parse(value)[0].StatusCode
+                  return statusCode === 0?1 : statusCode;
+      dashboards:
+        - uuid: 5a401c0d015449a987d606efa96cc232
+          name: hvl.availability
+          pages:
+            - {  }
+        - uuid: bcb53833f32f4763a947c93bbbcfd302
+          name: icmpping
+          pages:
+            - {  }
+        - uuid: efdbfccf864d4309970752d024a5510a
+          name: 'zabbix[host,agent,available]'
+          pages:
+            - {  }
+        - uuid: 84fb92840cd24192b7664562b5196d5e
+          name: 'zabbix[host,snmp,available]'
+          pages:
+            - {  }
+      valuemaps:
+        - uuid: c66307a040f848efbaa3d200449d9251
+          name: 'Default 80 Port'
+          mappings:
+            - type: DEFAULT
+              newvalue: '0'
