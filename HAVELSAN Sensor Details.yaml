@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-18T07:29:13Z'
+  date: '2024-11-19T03:25:18Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -11,6 +11,28 @@ zabbix_export:
       groups:
         - name: Templates
       items:
+        - uuid: 0258552efad243d5b1633f460af2a070
+          name: 'HAVELSAN Device Type'
+          type: CALCULATED
+          key: hvl.dev.type
+          trends: '0'
+          value_type: TEXT
+          params: 'last(//web.page.get[{$IP},test.cgi,{$PORT}])'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |2
+                    if (value.includes("404")) {
+                      value = "0";
+                    } else if (value.length < 3 && value.includes("3")) {
+                      value = "1";
+                    }
+                    return value;
+                  
+            - type: STR_REPLACE
+              parameters:
+                - '1'
+                - Sensor
         - uuid: 474e1e2435dc4804a57085b79a39ac6a
           name: 'HAVELSAN Sensor Read'
           key: 'web.page.get[{$IP},test.cgi,{$PORT}]'
