@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-19T08:39:08Z'
+  date: '2024-11-20T12:09:59Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -16,8 +16,6 @@ zabbix_export:
           type: CALCULATED
           key: hvl.dev.type
           delay: 1d
-          trends: '0'
-          value_type: TEXT
           params: 'last(//web.page.get[{$IP},test.cgi,{$PORT}])'
           preprocessing:
             - type: JAVASCRIPT
@@ -32,7 +30,7 @@ zabbix_export:
             - type: STR_REPLACE
               parameters:
                 - '1'
-                - Sensor
+                - '12'
         - uuid: 474e1e2435dc4804a57085b79a39ac6a
           name: 'HAVELSAN Sensor Read'
           key: 'web.page.get[{$IP},test.cgi,{$PORT}]'
