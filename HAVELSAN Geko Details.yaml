@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-19T08:38:05Z'
+  date: '2024-11-20T12:09:47Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -21,8 +21,6 @@ zabbix_export:
           type: HTTP_AGENT
           key: hvl.dev.type
           delay: 1d
-          trends: '0'
-          value_type: TEXT
           preprocessing:
             - type: JAVASCRIPT
               parameters:
@@ -41,11 +39,11 @@ zabbix_export:
             - type: STR_REPLACE
               parameters:
                 - '2'
-                - 'Geko Sensor'
+                - '13'
             - type: REGEX
               parameters:
                 - '3'
-                - 'Geko  Plus Kamera'
+                - '10'
           url: 'http://{$IP}'
           status_codes: ''
         - uuid: ae699931d457471eb6ad7db65643fddd
