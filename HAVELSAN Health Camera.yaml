@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-19T08:48:37Z'
+  date: '2024-11-20T12:09:52Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -50,14 +50,12 @@ zabbix_export:
           name: 'HAVELSAN Device Type'
           type: CALCULATED
           key: hvl.dev.type
-          trends: '0'
-          value_type: TEXT
           params: 'last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"])'
           preprocessing:
             - type: STR_REPLACE
               parameters:
                 - '1'
-                - Kamera
+                - '11'
         - uuid: 9a7ac080d90140b0bfb0e38ce3cfddfc
           name: 'ICMP Ping Result Array'
           key: 'wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"]'
