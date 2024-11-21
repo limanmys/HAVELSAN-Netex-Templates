@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-20T12:09:52Z'
+  date: '2024-11-21T07:23:02Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -52,10 +52,19 @@ zabbix_export:
           key: hvl.dev.type
           params: 'last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"])'
           preprocessing:
-            - type: STR_REPLACE
+            - type: JAVASCRIPT
               parameters:
-                - '1'
-                - '11'
+                - |
+                  if(value == '1'){
+                    if ("{$IP}".slice(-3) === "200"){
+                      return 14
+                    }
+                    else{
+                      return 11
+                    }
+                  }
+                  return 0
+                  
         - uuid: 9a7ac080d90140b0bfb0e38ce3cfddfc
           name: 'ICMP Ping Result Array'
           key: 'wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"]'
