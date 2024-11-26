@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-26T06:35:18Z'
+  date: '2024-11-26T07:30:39Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -16,6 +16,15 @@ zabbix_export:
           type: CALCULATED
           key: hvl.availability
           params: 'last(//net.tcp.service[http,,80])'
+          triggers:
+            - uuid: 84cedc3bef1748108f111aa0f449d472
+              expression: 'last(/Havelsan Geko Details/hvl.availability,#2)=0'
+              name: 'En az 1 dakikadır kameraya ulaşılamıyor'
+              priority: HIGH
+            - uuid: 7f157a8b822e4178b3a2bc71a0511d4f
+              expression: 'last(/Havelsan Geko Details/hvl.availability,#3)=0'
+              name: 'En az 3 dakikadır kameraya ulaşılamıyor'
+              priority: DISASTER
         - uuid: be5a0a6f95bc41e79a360fc34940dbeb
           name: 'Device Type'
           type: HTTP_AGENT
