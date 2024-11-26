@@ -1,9 +1,7 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-14T12:50:10Z'
+  date: '2024-11-26T10:11:59Z'
   groups:
-    - uuid: 7df96b18c230490a9a0a9e2307226338
-      name: Templates
     - uuid: 846977d1dfed4968bc5f8bdb363285bc
       name: 'Templates/Operating systems'
   templates:
@@ -14,6 +12,11 @@ zabbix_export:
       groups:
         - name: 'Templates/Operating systems'
       items:
+        - uuid: 15805a40624043548a9732b93b11f7a3
+          name: 'HAVELSAN Device Type'
+          type: CALCULATED
+          key: hvl.dev.type
+          params: 'last(//vfs.dir.get[{$PATH}])'
         - uuid: ef30042970e4497f9947fd8252d15af9
           name: 'HAVELSAN: Used swap space in %'
           key: 'perf_counter_en["\Paging file(_Total)\% Usage"]'
@@ -93,6 +96,27 @@ zabbix_export:
               tags:
                 - tag: scope
                   value: notice
+        - uuid: da5e73e7728b4476949104f17c97a9a5
+          name: 'HAVELSAN: Path Item'
+          key: 'vfs.dir.get[{$PATH}]'
+          delay: 1d
+          history: 7d
+          description: 'HAVELSAN Path item'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |2
+                    if (value.includes("Jemus5")) {
+                      value = "1";
+                    }
+                    else if(value.includes("Jemus8"))
+                    {
+                     value = "2";
+                    } 
+                    else {
+                      value = "0";
+                    }
+                    return value;
         - uuid: be0536da17df49ce8fc18e1f6fe792a7
           name: 'HAVELSAN: Total memory'
           key: 'vm.memory.size[total]'
@@ -525,6 +549,8 @@ zabbix_export:
         - macro: '{$NET.IF.IFNAME.NOT_MATCHES}'
           value: Miniport|Virtual|Teredo|Kernel|Loopback|Bluetooth|HTTPS|6to4|QoS|Layer
           description: 'This macro is used in Network interface discovery. Can be overridden on the host or linked template level.'
+        - macro: '{$PATH}'
+          value: 'C:\Program Files (x86)\Microsoft\Edge'
         - macro: '{$SERVICE.NAME.MATCHES}'
           value: '^.*$'
           description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
@@ -780,133 +806,6 @@ zabbix_export:
           mappings:
             - value: '1'
               newvalue: Up
-    - uuid: 59fed9a6016447e78f66be46c91dbaaf
-      template: 'Havelsan Health Template'
-      name: 'Havelsan Health Template'
-      groups:
-        - name: Templates
-      items:
-        - uuid: a275c79a97f14edf89244125c9e32dee
-          name: 'HAVELSAN Availability'
-          type: CALCULATED
-          key: hvl.availability
-          params: |
-            last(//zabbix[host,agent,available]) + last(//zabbix[host,snmp,available]) + 
-            last(//icmpping)
-          preprocessing:
-            - type: STR_REPLACE
-              parameters:
-                - '3'
-                - '1'
-            - type: STR_REPLACE
-              parameters:
-                - '2'
-                - '1'
-            - type: STR_REPLACE
-              parameters:
-                - '4'
-                - '1'
-            - type: STR_REPLACE
-              parameters:
-                - '5'
-                - '1'
-          triggers:
-            - uuid: 73a9c41242b74407bf7df9f82eef9afa
-              expression: 'last(/Havelsan Health Template/hvl.availability,#2)=0'
-              name: 'En az 1 dakikadır sunucuya ulaşılamıyor'
-              priority: HIGH
-            - uuid: 37d44004cf634c3b9dc7b662b6db021f
-              expression: 'last(/Havelsan Health Template/hvl.availability,#3)=0'
-              name: 'En az 3 dakikadır sunucuya ulaşılamıyor'
-              priority: DISASTER
-        - uuid: d76d23d44cf94d6ab367d71793dfb2e6
-          name: 'HAVELSAN ICMP Availaiblity'
-          type: SIMPLE
-          key: icmpping
-        - uuid: 5a3c08973fd041a1817187c9e9ba89f2
-          name: 'Havelsan HTTP Port 80 Availability'
-          type: SIMPLE
-          key: 'net.tcp.service[tcp,,80]'
-          inventory_link: DEPLOYMENT_STATUS
-          valuemap:
-            name: 'Default 80 Port'
-        - uuid: 41db701fad904c1fae4133dc285cc739
-          name: 'HAVELSAN agent availability'
-          type: INTERNAL
-          key: 'zabbix[host,agent,available]'
-          preprocessing:
-            - type: STR_REPLACE
-              parameters:
-                - '2'
-                - '0'
-        - uuid: 9a698064e73b4c3b817b868e2ca77d71
-          name: 'HAVELSAN snmp availability'
-          type: INTERNAL
-          key: 'zabbix[host,snmp,available]'
-          preprocessing:
-            - type: STR_REPLACE
-              parameters:
-                - '2'
-                - '0'
-      dashboards:
-        - uuid: 4ecee351b1fe44c3bbcc657ae29c1832
-          name: hvl.availability
-          pages:
-            - {  }
-        - uuid: 3445e7e5d5634f1fa7c90a18570eedfd
-          name: icmpping
-          pages:
-            - {  }
-        - uuid: 1188baf132d44665ab289c22a50f5e28
-          name: 'zabbix[host,agent,available]'
-          pages:
-            - {  }
-        - uuid: f3d21fb45f734596ac2b99be107d27b8
-          name: 'zabbix[host,snmp,available]'
-          pages:
-            - {  }
-      valuemaps:
-        - uuid: 1f288939c7cb427ab5dd81d3794a4056
-          name: 'Default 80 Port'
-          mappings:
-            - type: DEFAULT
-              newvalue: '0'
-    - uuid: 2f580b62b5b249248dcc923f40dbb25d
-      template: 'Havelsan Sensor Details'
-      name: 'Havelsan Sensor Details'
-      groups:
-        - name: Templates
-      items:
-        - uuid: 474e1e2435dc4804a57085b79a39ac6a
-          name: 'HAVELSAN Sensor Read'
-          key: 'web.page.get[{$IP},test.cgi,{$PORT}]'
-          trends: '0'
-          value_type: TEXT
-          preprocessing:
-            - type: JAVASCRIPT
-              parameters:
-                - |
-                  value = value.slice(80)
-                  
-                  return value
-        - uuid: 04543c70abe84bb2841f3b466b351a8c
-          name: 'HAVELSAN Sensor Health'
-          key: 'web.page.get[{$IP},test1.cgi,{$PORT}]'
-          trends: '0'
-          value_type: TEXT
-          preprocessing:
-            - type: JAVASCRIPT
-              parameters:
-                - |
-                  value = value.slice(80)
-                  
-                  return value
-      valuemaps:
-        - uuid: e6d19ef982074908bc60b68db987f289
-          name: Default
-          mappings:
-            - type: DEFAULT
-              newvalue: '0'
   graphs:
     - uuid: 3e63256d39cb4382b59951a74b85a2a5
       name: 'Windows: CPU utilization'
