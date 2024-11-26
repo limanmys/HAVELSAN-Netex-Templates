@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-20T12:09:59Z'
+  date: '2024-11-26T09:00:35Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -24,13 +24,9 @@ zabbix_export:
                     if (value.includes("404")) {
                       value = "0";
                     } else if (value.length < 3 && value.includes("1")) {
-                      value = "1";
+                      value = "12";
                     }
                     return value;
-            - type: STR_REPLACE
-              parameters:
-                - '1'
-                - '12'
         - uuid: 474e1e2435dc4804a57085b79a39ac6a
           name: 'HAVELSAN Sensor Read'
           key: 'web.page.get[{$IP},test.cgi,{$PORT}]'
@@ -43,6 +39,11 @@ zabbix_export:
                   value = value.slice(80)
                   
                   return value
+          triggers:
+            - uuid: 2bdc26c6eb494149aafecd053c9a80e4
+              expression: 'last(/Havelsan Sensor Details/web.page.get[{$IP},test.cgi,{$PORT}],#3)>3 or last(/Havelsan Sensor Details/web.page.get[{$IP},test.cgi,{$PORT}],#3)<1'
+              name: 'Sensor Sağlıklı Çalışmıyor'
+              priority: AVERAGE
         - uuid: 04543c70abe84bb2841f3b466b351a8c
           name: 'HAVELSAN Sensor Health'
           key: 'web.page.get[{$IP},test1.cgi,{$PORT}]'
@@ -55,6 +56,9 @@ zabbix_export:
                   value = value.slice(80)
                   
                   return value
+      macros:
+        - macro: '{$PORT}'
+          value: '80'
       valuemaps:
         - uuid: e6d19ef982074908bc60b68db987f289
           name: Default
