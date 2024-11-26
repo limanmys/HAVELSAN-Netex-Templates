@@ -75,7 +75,7 @@ zabbix_export:
               parameters:
                 - |
                   var statusCode = JSON.parse(value)[0].StatusCode
-                  return statusCode === 0?1 : statusCode;
+                  return statusCode === 0?1 : 0;
       dashboards:
         - uuid: 5a401c0d015449a987d606efa96cc232
           name: hvl.availability
