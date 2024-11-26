@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-20T12:09:47Z'
+  date: '2024-11-26T06:35:18Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -26,24 +26,16 @@ zabbix_export:
               parameters:
                 - |2
                     if (value.includes("Sensor-1")) {
-                      value = "2";
+                      value = "13";
                     }
                     else if(value.includes("geko_plus"))
                     {
-                     value = "3";
+                     value = "10";
                     } 
                     else {
                       value = "0";
                     }
                     return value;
-            - type: STR_REPLACE
-              parameters:
-                - '2'
-                - '13'
-            - type: REGEX
-              parameters:
-                - '3'
-                - '10'
           url: 'http://{$IP}'
           status_codes: ''
         - uuid: ae699931d457471eb6ad7db65643fddd
