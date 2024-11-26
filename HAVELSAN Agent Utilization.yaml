@@ -107,11 +107,11 @@ zabbix_export:
               parameters:
                 - |2
                     if (value.includes("Jemus5")) {
-                      value = "1";
+                      value = "16";
                     }
                     else if(value.includes("Jemus8"))
                     {
-                     value = "2";
+                     value = "17";
                     } 
                     else {
                       value = "0";
