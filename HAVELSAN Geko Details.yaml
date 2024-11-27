@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-26T07:30:39Z'
+  date: '2024-11-27T07:25:41Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -40,7 +40,15 @@ zabbix_export:
                     else if(value.includes("geko_plus"))
                     {
                      value = "10";
+                    }
+                    else if(value.includes("Eltek"))
+                    {
+                     value = "18"; // UPS
                     } 
+                    else if(value.includes("login"))
+                    {
+                     value = "19"; // CCTV
+                    }  
                     else {
                       value = "0";
                     }
