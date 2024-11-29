@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-26T10:11:59Z'
+  date: '2024-11-29T11:54:42Z'
   groups:
     - uuid: 846977d1dfed4968bc5f8bdb363285bc
       name: 'Templates/Operating systems'
@@ -41,7 +41,7 @@ zabbix_export:
               value: cpu
           triggers:
             - uuid: 0d88a7e9ffa54cd18378b92fd0b5130b
-              expression: 'min(/HAVELSAN Agent Utilization/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+              expression: 'last(/HAVELSAN Agent Utilization/system.cpu.util,#2)>={$CPU.UTIL.CRIT}'
               name: 'HAVELSAN: High CPU utilization'
               event_name: 'Windows: High CPU utilization (over {$CPU.UTIL.CRIT}% for 5m)'
               opdata: 'Current utilization: {ITEM.LASTVALUE1}'
@@ -107,11 +107,11 @@ zabbix_export:
               parameters:
                 - |2
                     if (value.includes("Jemus5")) {
-                      value = "16";
+                      value = "1";
                     }
                     else if(value.includes("Jemus8"))
                     {
-                     value = "17";
+                     value = "2";
                     } 
                     else {
                       value = "0";
