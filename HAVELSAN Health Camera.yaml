@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-21T07:23:02Z'
+  date: '2024-12-02T06:39:23Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -64,10 +64,10 @@ zabbix_export:
                     }
                   }
                   return 0
-                  
         - uuid: 9a7ac080d90140b0bfb0e38ce3cfddfc
           name: 'ICMP Ping Result Array'
-          key: 'wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"]'
+          key: 'wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=5000"]'
+          delay: 30s
           trends: '0'
           value_type: TEXT
           preprocessing:
