@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-11-29T11:54:42Z'
+  date: '2024-12-03T05:42:42Z'
   groups:
     - uuid: 846977d1dfed4968bc5f8bdb363285bc
       name: 'Templates/Operating systems'
@@ -13,12 +13,21 @@ zabbix_export:
         - name: 'Templates/Operating systems'
       items:
         - uuid: 15805a40624043548a9732b93b11f7a3
-          name: 'HAVELSAN Device Type'
+          name: 'lmn: Device Type'
           type: CALCULATED
           key: hvl.dev.type
           params: 'last(//vfs.dir.get[{$PATH}])'
+        - uuid: 7b3d127455294133be589195221fce78
+          name: 'lmn: Zabbix Service Status'
+          type: SIMPLE
+          key: 'net.tcp.service[tcp,,{$AGENT_PORT}]'
+          triggers:
+            - uuid: e2fc04b9b3554c12b92a546baf5e6078
+              expression: 'last(/HAVELSAN Agent Utilization/net.tcp.service[tcp,,{$AGENT_PORT}],#3)=0'
+              name: 'Zabbix Agent Not Reachable'
+              priority: WARNING
         - uuid: ef30042970e4497f9947fd8252d15af9
-          name: 'HAVELSAN: Used swap space in %'
+          name: 'lmn: Used swap space in %'
           key: 'perf_counter_en["\Paging file(_Total)\% Usage"]'
           history: 7d
           value_type: FLOAT
@@ -30,7 +39,7 @@ zabbix_export:
             - tag: component
               value: storage
         - uuid: 3492c272a6ef491e919393c46a344647
-          name: 'HAVELSAN: CPU utilization'
+          name: 'lmn: CPU utilization'
           key: system.cpu.util
           history: 7d
           value_type: FLOAT
@@ -51,7 +60,7 @@ zabbix_export:
                 - tag: scope
                   value: performance
         - uuid: 80ef0bd497614a48ac2a196d33925df5
-          name: 'HAVELSAN: Free swap space'
+          name: 'lmn: Free swap space'
           type: CALCULATED
           key: system.swap.free
           history: 7d
@@ -64,7 +73,7 @@ zabbix_export:
             - tag: component
               value: storage
         - uuid: 2c9481cc11694ed0bdab62dff715dc84
-          name: 'HAVELSAN: Total swap space'
+          name: 'lmn: Total swap space'
           key: 'system.swap.size[,total]'
           history: 7d
           units: B
@@ -75,7 +84,7 @@ zabbix_export:
             - tag: component
               value: storage
         - uuid: b8ab7134b7714ae096b26ef985146103
-          name: 'HAVELSAN: Uptime'
+          name: 'lmn: Uptime'
           key: system.uptime
           delay: 30s
           history: 7d
@@ -97,7 +106,7 @@ zabbix_export:
                 - tag: scope
                   value: notice
         - uuid: da5e73e7728b4476949104f17c97a9a5
-          name: 'HAVELSAN: Path Item'
+          name: 'lmn: Path Item'
           key: 'vfs.dir.get[{$PATH}]'
           delay: 1d
           history: 7d
@@ -118,7 +127,7 @@ zabbix_export:
                     }
                     return value;
         - uuid: be0536da17df49ce8fc18e1f6fe792a7
-          name: 'HAVELSAN: Total memory'
+          name: 'lmn: Total memory'
           key: 'vm.memory.size[total]'
           history: 7d
           units: B
@@ -127,7 +136,7 @@ zabbix_export:
             - tag: component
               value: memory
         - uuid: c1da8b9fb1c241dd89ca9a657e233c6e
-          name: 'HAVELSAN: Used memory'
+          name: 'lmn: Used memory'
           key: 'vm.memory.size[used]'
           history: 7d
           units: B
@@ -136,7 +145,7 @@ zabbix_export:
             - tag: component
               value: memory
         - uuid: dd3ad4759ccb41d2a168a8e11e84c760
-          name: 'HAVELSAN: Memory utilization'
+          name: 'lmn: Memory utilization'
           type: CALCULATED
           key: vm.memory.util
           history: 7d
@@ -504,6 +513,9 @@ zabbix_export:
         - macro: '{$AGENT.TIMEOUT}'
           value: 3m
           description: 'Timeout after which agent is considered unavailable. Works only for agents reachable from Zabbix server/proxy (passive mode).'
+        - macro: '{$AGENT_PORT}'
+          value: '10050'
+          description: 'Zabbix agent port'
         - macro: '{$CPU.INTERRUPT.CRIT.MAX}'
           value: '50'
           description: 'The critical threshold of the % Interrupt Time counter.'
@@ -711,6 +723,11 @@ zabbix_export:
                         host: 'HAVELSAN Agent Utilization'
                         name: 'Windows: Swap usage'
       valuemaps:
+        - uuid: 523900a05baa453483aedd4a105900fe
+          name: Default
+          mappings:
+            - type: DEFAULT
+              newvalue: '0'
         - uuid: bbf10fc46aa44184871fcc41ed78866c
           name: 'Win32_NetworkAdapter::AdapterTypeId'
           mappings:
