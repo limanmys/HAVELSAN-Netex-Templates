@@ -1,0 +1,34 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-12-04T12:11:57Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 87d211db74c049cf81d91844d6a64fc7
+      template: 'HAVELSAN Mico Service Monitoring'
+      name: 'HAVELSAN Mico Service Monitoring'
+      description: 'HAVELSAN Mico Service Monitoring v:1.0'
+      groups:
+        - name: Templates
+      items:
+        - uuid: ead391a0c2b34ed7af0fdeaf8b28bc0e
+          name: 'lmn: Mico Socket Control'
+          key: 'net.tcp.port[,{$MICO_PORT}]'
+          triggers:
+            - uuid: fa84145bd35241b789c2af5214518e20
+              expression: 'last(/HAVELSAN Mico Service Monitoring/net.tcp.port[,{$MICO_PORT}],#3)=0'
+              name: 'Mico Socket not available'
+              priority: WARNING
+        - uuid: 4ea67bfc5795449197bb700a18b5a9bc
+          name: 'lmm: Mico Service Status'
+          key: 'service.info["Mico",state]'
+          delay: 5m
+          triggers:
+            - uuid: 970e078f8d93484e8679af20903a447b
+              expression: 'last(/HAVELSAN Mico Service Monitoring/service.info["Mico",state],#2)=0'
+              name: 'Mico Service not working'
+              priority: AVERAGE
+      macros:
+        - macro: '{$MICO_PORT}'
+          value: '7779'
