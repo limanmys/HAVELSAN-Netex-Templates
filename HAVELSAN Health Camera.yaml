@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-12-02T06:39:23Z'
+  date: '2024-12-20T10:46:45Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -15,28 +15,20 @@ zabbix_export:
           name: 'HAVELSAN Availability'
           type: CALCULATED
           key: hvl.availability
-          params: 'last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"])'
+          params: 'last(//zabbix[host,agent,available]) + last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=5000"])'
           preprocessing:
             - type: STR_REPLACE
               parameters:
-                - '3'
                 - '1'
+                - '0'
             - type: STR_REPLACE
               parameters:
                 - '2'
                 - '1'
             - type: STR_REPLACE
               parameters:
-                - '4'
-                - '1'
-            - type: STR_REPLACE
-              parameters:
-                - '5'
-                - '1'
-            - type: STR_REPLACE
-              parameters:
-                - '6'
-                - '1'
+                - '3'
+                - '2'
           triggers:
             - uuid: c07a1fb7a76d4858bb91aebbb29ff2a9
               expression: 'last(/Havelsan Health Camera/hvl.availability,#2)=0'
@@ -50,7 +42,7 @@ zabbix_export:
           name: 'HAVELSAN Device Type'
           type: CALCULATED
           key: hvl.dev.type
-          params: 'last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=2000"])'
+          params: 'last(//wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=5000"])'
           preprocessing:
             - type: JAVASCRIPT
               parameters:
@@ -68,14 +60,26 @@ zabbix_export:
           name: 'ICMP Ping Result Array'
           key: 'wmi.getall[root\cimv2,"SELECT PrimaryAddressResolutionStatus, StatusCode, ResponseTime FROM Win32_PingStatus WHERE Address=''{$IP}'' AND Timeout=5000"]'
           delay: 30s
-          trends: '0'
-          value_type: TEXT
           preprocessing:
+            - type: CHECK_NOT_SUPPORTED
+              parameters:
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
             - type: JAVASCRIPT
               parameters:
                 - |
-                  var statusCode = JSON.parse(value)[0].StatusCode
-                  return statusCode === 0?1 : 0;
+                  try {
+                      var statusCode = JSON.parse(value)[0].StatusCode;
+                      return statusCode === 0 ? 1 : 0;
+                  } catch (error) {
+                      // Hata durumunda varsayılan değer döndür
+                      return 0;
+                  }
+        - uuid: 05290289a9ac449db9337da59a70b2fe
+          name: 'Havelsan zabbix Availability'
+          type: INTERNAL
+          key: 'zabbix[host,agent,available]'
       dashboards:
         - uuid: 5a401c0d015449a987d606efa96cc232
           name: hvl.availability
