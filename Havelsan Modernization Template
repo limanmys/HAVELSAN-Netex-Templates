@@ -1,0 +1,66 @@
+zabbix_export:
+  version: '6.0'
+  date: '2025-01-06T07:46:28Z'
+  groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 92ca6726394648fbb34f9a332530fc52
+      template: 'Havelsan Modernization Template'
+      name: 'Havelsan Modernization Template'
+      groups:
+        - name: Templates
+      items:
+        - uuid: c496d21a88054232b5bddcf733fe697b
+          name: 'HAVELSAN Availability'
+          type: CALCULATED
+          key: hvl.availability
+          params: 'last(//net.tcp.service[tcp,{$GEKO_IP},{$PORT}])'
+          triggers:
+            - uuid: 01ba8afa65ca4dca89b4f5d2e809b6b9
+              expression: 'last(/Havelsan Modernization Template/hvl.availability,#2)=0'
+              name: 'En az 1 dakikadır sunucuya ulaşılamıyor'
+              priority: HIGH
+            - uuid: 4f5f8c426dc8472fbb87706f9a27b05b
+              expression: 'last(/Havelsan Modernization Template/hvl.availability,#3)=0'
+              name: 'En az 3 dakikadır sunucuya ulaşılamıyor'
+              priority: DISASTER
+              dependencies:
+                - name: 'En az 1 dakikadır sunucuya ulaşılamıyor'
+                  expression: 'last(/Havelsan Modernization Template/hvl.availability,#2)=0'
+        - uuid: 53955984f5bf4fd888cbaba4c74ede02
+          name: 'Device Type'
+          type: HTTP_AGENT
+          key: hvl.dev.type
+          delay: 1d
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |2
+                    if (value.includes("Sensor-1")) {
+                      value = "13";
+                    }
+                    else if(value.includes("geko_plus"))
+                    {
+                     value = "10";
+                    }
+                    else if(value.includes("Eltek"))
+                    {
+                     value = "18"; // UPS
+                    } 
+                    else if(value.includes("login"))
+                    {
+                     value = "19"; // CCTV
+                    }  
+                    else {
+                      value = "0";
+                    }
+                    return value;
+          url: 'http://{$GEKO_IP}'
+          status_codes: ''
+        - uuid: 39a85d8c7f3f4e8295418638aa97e97c
+          name: 'HAVELSAN Port 80 Check'
+          key: 'net.tcp.service[tcp,{$GEKO_IP},{$PORT}]'
+      macros:
+        - macro: '{$PORT}'
+          value: '80'
