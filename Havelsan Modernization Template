@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2025-01-06T07:46:28Z'
+  date: '2025-01-18T08:32:27Z'
   groups:
     - uuid: 7df96b18c230490a9a0a9e2307226338
       name: Templates
@@ -15,7 +15,16 @@ zabbix_export:
           name: 'HAVELSAN Availability'
           type: CALCULATED
           key: hvl.availability
-          params: 'last(//net.tcp.service[tcp,{$GEKO_IP},{$PORT}])'
+          params: 'last(//zabbix[host,agent,available]) + last(//net.tcp.service[tcp,{$GEKO_IP},{$PORT}])'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '1'
+                - '0'
+            - type: STR_REPLACE
+              parameters:
+                - '2'
+                - '1'
           triggers:
             - uuid: 01ba8afa65ca4dca89b4f5d2e809b6b9
               expression: 'last(/Havelsan Modernization Template/hvl.availability,#2)=0'
@@ -33,6 +42,7 @@ zabbix_export:
           type: HTTP_AGENT
           key: hvl.dev.type
           delay: 1d
+          status: DISABLED
           preprocessing:
             - type: JAVASCRIPT
               parameters:
@@ -61,6 +71,10 @@ zabbix_export:
         - uuid: 39a85d8c7f3f4e8295418638aa97e97c
           name: 'HAVELSAN Port 80 Check'
           key: 'net.tcp.service[tcp,{$GEKO_IP},{$PORT}]'
+        - uuid: d38192554f044b6486125a405eb758cf
+          name: 'Havelsan zabbix Availability'
+          type: INTERNAL
+          key: 'zabbix[host,agent,available]'
       macros:
         - macro: '{$PORT}'
           value: '80'
