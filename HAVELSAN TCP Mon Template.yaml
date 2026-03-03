@@ -1,0 +1,107 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-10-16T05:12:14Z'
+  groups:
+    - uuid: 57b7ae836ca64446ba2c296389c009b1
+      name: Templates/Modules
+  templates:
+    - uuid: 78a17536644b46f7861af4fcc9ea2682
+      template: 'HAVELSAN TCP Performance Mon'
+      name: 'HAVELSAN TCP Performance Mon'
+      description: HAVELSAN TCP Performance Monitoring
+      groups:
+        - name: Templates/Modules
+      items:
+        - uuid: e8751ea51c764b49beff7ddb14d258d1
+          name: 'TCP: Service availability'
+          type: SIMPLE
+          key: 'net.tcp.service[tcp,{$TCP_TARGET_HOST},{$TCP_TARGET_PORT}]'
+          history: 7d
+          value_type: FLOAT
+          valuemap:
+            name: 'Service state'
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: c4477ef79947463d836b208e32af2921
+              expression: 'max(/HAVELSAN TCP Performance Mon/net.tcp.service[tcp,{$TCP_TARGET_HOST},{$TCP_TARGET_PORT}],{$TCP_FAIL_INTERVAL})=0'
+              name: 'TCP: Service is unavailable'
+              opdata: 'Status: {ITEM.LASTVALUE1}'
+              priority: HIGH
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: b7c2645ca6d043779cf9122f0bed6f31
+          name: 'TCP: Response time'
+          type: SIMPLE
+          key: 'net.tcp.service.perf[tcp,{$TCP_TARGET_HOST},{$TCP_TARGET_PORT}]'
+          history: 7d
+          value_type: FLOAT
+          units: s
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: dabcdb8249fe47ac83c043a29e3f58e1
+              expression: 'avg(/HAVELSAN TCP Performance Mon/net.tcp.service.perf[tcp,{$TCP_TARGET_HOST},{$TCP_TARGET_PORT}],5m)>{$TCP_RESPONSE_TIME_WARN}'
+              name: 'TCP: High response time'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              dependencies:
+                - name: 'TCP: Service is unavailable'
+                  expression: 'max(/HAVELSAN TCP Performance Mon/net.tcp.service[tcp,{$TCP_TARGET_HOST},{$TCP_TARGET_PORT}],{$TCP_FAIL_INTERVAL})=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: b7c2645ca6d043779cf9122f0bed6f38
+          name: 'TCP: Connection status'
+          type: SIMPLE
+          key: 'net.tcp.port[{$TCP_TARGET_HOST},{$TCP_TARGET_PORT}]'
+          history: 7d
+          value_type: FLOAT
+          valuemap:
+            name: 'Service state'
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: b7c2645ca6d043779cf9122f0bed6f39
+              expression: 'last(/HAVELSAN TCP Performance Mon/net.tcp.port[{$TCP_TARGET_HOST},{$TCP_TARGET_PORT}])=0'
+              name: 'TCP: Port is closed'
+              opdata: 'Port: {$TCP_TARGET_PORT}'
+              priority: HIGH
+              tags:
+                - tag: scope
+                  value: availability
+      macros:
+        - macro: '{$TCP_TARGET_HOST}'
+          value: '127.0.0.1'
+          description: 'TCP hedef IP adresi veya hostname'
+        - macro: '{$TCP_TARGET_PORT}'
+          value: '80'
+          description: 'TCP hedef port numarası'
+        - macro: '{$TCP_RESPONSE_TIME_WARN}'
+          value: '0.5'
+          description: 'TCP yanıt süresi uyarı eşiği (saniye)'
+        - macro: '{$TCP_FAIL_INTERVAL}'
+          value: '3m'
+          description: 'TCP bağlantı hatası tespit aralığı'
+      valuemaps:
+        - uuid: d3cd58e0b75347d5b13cb07608bdaa21
+          name: 'Service state'
+          mappings:
+            - value: '0'
+              newvalue: Down
+            - value: '1'
+              newvalue: Up
